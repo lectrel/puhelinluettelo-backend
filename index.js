@@ -1,8 +1,23 @@
 const express = require('express')
 const { response } = require('express')
+const morgan = require('morgan')
 const app = express()
 
 app.use(express.json())
+
+morgan.token('req-body', (req, _res) => 
+    JSON.stringify(req.body)
+)
+
+// Log with tiny configuration by default
+app.use(morgan('tiny', {
+    skip: function (req, res) { return req.method === "POST" }
+}))
+
+// Log also request body for POST requests
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :req-body', {
+    skip: function (req, res) { return req.method !== "POST" }
+}))
 
 let persons = [
     {
@@ -38,6 +53,7 @@ app.get('/api/persons', (request, response) => {
 app.get('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id)
     const person = persons.find(person => person.id === id)
+    console.log(req.method, typeof(req.method))
     if (person) {
         res.json(person)
     } else {
