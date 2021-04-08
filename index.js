@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const { response } = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
 const app = express()
 
 app.use(express.json())
@@ -22,53 +24,30 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :r
     skip: function (req, res) { return req.method !== "POST" }
 }))
 
-let persons = [
-    {
-        "name": "Arto Hellas",
-        "number": "040-123456",
-        "id": 1
-    },
-    {
-        "name": "Ada Lovelace",
-        "number": "39-44-5323523",
-        "id": 2
-    },
-    {
-        "name": "Dan Abramov",
-        "number": "12-43-234345",
-        "id": 3
-    },
-    {
-        "name": "Mary Poppendieck",
-        "number": "39-23-6423122",
-        "id": 4
-    }
-]
-
 app.get('/', (req, res) => {
     res.send('<h1>Puhelinluettelo backend</h1>')
 })
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+        response.json(persons)
+    })
 })
 
 app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const person = persons.find(person => person.id === id)
-    console.log(req.method, typeof(req.method))
-    if (person) {
+    Person.findById(req.params.id).then(person => {
         res.json(person)
-    } else {
-        res.status(404).end()
-    }
+    })
+    console.log(req.method, typeof(req.method))
 })
 
 app.get('/info', (request, response) => {
-    response.send(`
-    <p>Phonebook has info for ${persons.length} people</p>
-    <p>${new Date()}</p>
-    `)
+    Person.find({}).then(persons => {
+        response.send(`
+        <p>Phonebook has info for ${persons.length} people</p>
+        <p>${new Date()}</p>
+        `)
+    })
 })
 
 const generateId = () => {
@@ -113,7 +92,7 @@ app.delete('/api/persons/:id', (req, res) => {
     res.status(204).end()
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
