@@ -6,9 +6,9 @@ const cors = require('cors')
 const Person = require('./models/person')
 const app = express()
 
-app.use(express.json())
 app.use(cors())
 app.use(express.static('build'))
+app.use(express.json())
 
 morgan.token('req-body', (req, _res) => 
     JSON.stringify(req.body)
@@ -34,10 +34,16 @@ app.get('/api/persons', (request, response) => {
     })
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
     Person.findById(req.params.id).then(person => {
-        res.json(person)
+        if (person) {
+            res.json(person)
+        } else {
+            res.status(404).end()
+        }
     })
+    .catch(error => next(error))
+
     console.log(req.method, typeof(req.method))
 })
 
@@ -49,10 +55,6 @@ app.get('/info', (request, response) => {
         `)
     })
 })
-
-/* const generateId = () => {
-    return Math.floor(Math.random() * 99999)
-} */
 
 app.post('/api/persons', (req, res) => {
     const body = req.body
@@ -85,12 +87,30 @@ app.post('/api/persons', (req, res) => {
     })
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    persons = persons.filter(person => person.id !== id)
-
-    res.status(204).end()
+app.delete('/api/persons/:id', (req, res, next) => {
+    Person.findByIdAndRemove(req.params.id).then(result => {
+        res.status(204).end()
+    })
+    .catch(error => next(error))
 })
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformed id' })
+    }
+
+    next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
