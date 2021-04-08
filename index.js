@@ -50,9 +50,9 @@ app.get('/info', (request, response) => {
     })
 })
 
-const generateId = () => {
+/* const generateId = () => {
     return Math.floor(Math.random() * 99999)
-}
+} */
 
 app.post('/api/persons', (req, res) => {
     const body = req.body
@@ -69,20 +69,20 @@ app.post('/api/persons', (req, res) => {
         })
     }
 
-    if (persons.map(p => p.name).includes(body.name)) {
+/*     if (persons.map(p => p.name).includes(body.name)) {
         return res.status(400).json({
             error: 'Name must be unique!'
         })
-    } 
+    }  */
 
-    const person = {
+    const person = new Person({
         name: body.name,
-        number: body.number,
-        id: generateId(),
-    }
+        number: body.number
+    })
 
-    persons = persons.concat(person)
-    res.json(person)
+    person.save().then(savedPerson => {
+        res.json(savedPerson)
+    })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
