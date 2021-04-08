@@ -48,9 +48,9 @@ app.get('/api/persons/:id', (req, res, next) => {
 })
 
 app.get('/info', (request, response) => {
-    Person.find({}).then(persons => {
+    Person.estimatedDocumentCount({}, (error, count) => {
         response.send(`
-        <p>Phonebook has info for ${persons.length} people</p>
+        <p>Phonebook has info for ${count} people</p>
         <p>${new Date()}</p>
         `)
     })
