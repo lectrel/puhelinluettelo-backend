@@ -71,12 +71,6 @@ app.post('/api/persons', (req, res) => {
         })
     }
 
-/*     if (persons.map(p => p.name).includes(body.name)) {
-        return res.status(400).json({
-            error: 'Name must be unique!'
-        })
-    }  */
-
     const person = new Person({
         name: body.name,
         number: body.number
@@ -85,6 +79,19 @@ app.post('/api/persons', (req, res) => {
     person.save().then(savedPerson => {
         res.json(savedPerson)
     })
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+    const newPerson = {
+        name: req.body.name,
+        number: req.body.number
+    }
+
+    Person.findByIdAndUpdate(req.params.id, newPerson, { new: true })
+        .then(updatedPerson => {
+            res.json(updatedPerson)
+        })
+        .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
