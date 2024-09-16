@@ -33,6 +33,6 @@
   },
   "devDependencies": {
     "eslint": "^7.23.0",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.22"
   }
 }
